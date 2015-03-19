@@ -10,13 +10,18 @@ import tempfile
 import time
 import os
 
+project_name = 'webform'
+old_version = '3.22'
+new_version = '3.23'
+commit_comments = '(DRUPAL-SA-CONTRIB-2015-078)'
+
 github_auth_key = ''
 include_repo_match = 'build-profile'
 files_to_modify = os.path.join('make', '*.makefile')
-find_string = 'projects[views][version] = "3.7"'
-replace_string = 'projects[views][version] = "3.8"'
-commit_message = 'Views 3.7 -> 3.8 (BugzID : 1350)'
-pause_seconds = 180
+find_string = 'projects[' + project_name + '][version] = "' + old_version  + '"'
+replace_string = 'projects[' + project_name + '][version] = "' + new_version  + '"'
+commit_message = project_name + ' ' + old_version + ' -> ' + new_version + ' ' + commit_comments
+pause_seconds = 5
 
 g = Github(github_auth_key)
 for repo in g.get_organization("unb-libraries").get_repos():
