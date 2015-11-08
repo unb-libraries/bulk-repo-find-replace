@@ -1,4 +1,5 @@
 #! /usr/bin/env python
+# coding: utf-8
 """Iterates over Github repositories and commits find-replaces.
 """
 
