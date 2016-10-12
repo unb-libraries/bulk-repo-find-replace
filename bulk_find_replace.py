@@ -64,7 +64,7 @@ for repo in org_repos:
                     if composer_data['require'][project_identifier] == update['old']:
                         composer_data['require'][project_identifier] = update['new']
                         with open(file_to_edit, 'w') as f:
-                            json.dump(composer_data, f, indent=4)
+                            json.dump(composer_data, f, indent=4, sort_keys=True)
 
                         commit_message = update['project'] + ' ' + update['old'] + ' -> ' + update['new']
                         if 'comments' in update:
