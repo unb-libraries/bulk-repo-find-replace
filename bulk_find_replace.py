@@ -61,7 +61,7 @@ for repo in org_repos:
 
                 for update in config['updates']:
                     project_identifier = 'drupal/' + update['project']
-                    if composer_data['require'][project_identifier] == update['old']:
+                    if project_identifier in composer_data['require'] and composer_data['require'][project_identifier] == update['old']:
                         composer_data['require'][project_identifier] = update['new']
                         with open(file_to_edit, 'w') as f:
                             json.dump(composer_data, f, indent=4, sort_keys=True)
