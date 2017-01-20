@@ -61,7 +61,6 @@ for repo in org_repos:
                     if update['old'] in file_data:
                         file_data = file_data.replace(update['old'], update['new'])
                         with open(file_to_edit, 'w') as f:
-                            file_data = f.read()
                             f.write(file_data)
                             f.truncate()
 
@@ -75,10 +74,10 @@ for repo in org_repos:
                 else:
                     print cur_repo.remotes.origin.push(cur_repo.head)
 
+                shutil.rmtree(tmp_dirpath)
+
                 print "Sleeping for " + str(pause_seconds) + " seconds to be polite.."
                 time.sleep(pause_seconds)
-
-            shutil.rmtree(tmp_dirpath)
 
         except:
             if options.print_only:
