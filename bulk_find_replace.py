@@ -15,7 +15,7 @@ import os
 import re
 
 include_repo_match = ''
-file_to_modify = os.path.join('build', 'composer.json')
+file_to_modify = os.path.join('Dockerfile')
 pause_seconds = 30
 
 parser = OptionParser()
@@ -41,13 +41,10 @@ for repo in org_repos:
             file_contents = repo.get_file_contents(file_to_modify)
 
             assert file_contents.encoding == "base64", "unsupported encoding: %s" % file_contents.encoding
-            composer_contents = base64.b64decode(file_contents.content)
-            composer_data = json.loads(composer_contents)
+            file_data = base64.b64decode(file_contents.content)
 
             for update in config['updates']:
-                project_identifier = 'drupal/' + update['project']
-                if composer_data['require'][project_identifier] == update['old']:
-                    # There is at least one update to this repo.
+                if update['old'] in file_data:
                     repo_needs_update = True
                     break
 
@@ -56,19 +53,19 @@ for repo in org_repos:
                 cur_repo = Repo.clone_from(repo.ssh_url, tmp_dirpath)
 
                 file_to_edit = os.path.join(tmp_dirpath, file_to_modify)
-                with open(file_to_edit, 'r') as f:
-                    composer_data = json.load(f)
+                print file_to_edit
+                with open(file_to_edit, 'r+') as f:
+                    file_data = f.read()
 
                 for update in config['updates']:
-                    project_identifier = 'drupal/' + update['project']
-                    if project_identifier in composer_data['require'] and composer_data['require'][project_identifier] == update['old']:
-                        composer_data['require'][project_identifier] = update['new']
+                    if update['old'] in file_data:
+                        file_data = file_data.replace(update['old'], update['new'])
                         with open(file_to_edit, 'w') as f:
-                            json.dump(composer_data, f, indent=4, sort_keys=True) + "\n"
+                            file_data = f.read()
+                            f.write(file_data)
+                            f.truncate()
 
-                        commit_message = update['project'] + ' ' + update['old'] + ' -> ' + update['new']
-                        if 'comments' in update:
-                            commit_message += ' ' + update['comments']
+                        commit_message = update['comments']
 
                         print cur_repo.git.add(file_to_modify)
                         print cur_repo.git.commit(m=commit_message)

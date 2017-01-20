@@ -2,15 +2,9 @@
   "github_auth_key": "this-is-my-key",
   "updates": [
     {
-      "project": "drupal",
-      "old": "8.0.3",
-      "new": "8.0.4",
-      "comments": "(SA-CORE-2016-001) :white_check_mark:"
-    },
-    {
-      "project": "colorbox",
-      "old": "2.11",
-      "new": "2.12"
+      "old": "NEWRELIC_PHP_VERSION 6.8.0.177",
+      "new": "NEWRELIC_PHP_VERSION 6.9.0.182",
+      "comments": "Update Newrelic To Latest"
     }
   ]
 }
