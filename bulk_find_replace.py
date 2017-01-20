@@ -53,7 +53,6 @@ for repo in org_repos:
                 cur_repo = Repo.clone_from(repo.ssh_url, tmp_dirpath)
 
                 file_to_edit = os.path.join(tmp_dirpath, file_to_modify)
-                print file_to_edit
                 with open(file_to_edit, 'r+') as f:
                     file_data = f.read()
 
