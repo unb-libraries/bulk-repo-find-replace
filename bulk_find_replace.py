@@ -65,7 +65,9 @@ for repo in org_repos:
 
                         composer_data['require'][project_identifier.strip()] = update['new'].strip()
                         with open(file_to_edit, 'w') as f:
-                            json.dump(composer_data, f, indent=4, sort_keys=True) + "\n"
+                            updated_data = json.dumps(composer_data, indent=4, sort_keys=True)
+                            for write_line in iter(updated_data.split('\n')):
+                                f.write(write_line.rstrip() + "\n")
 
                         commit_message = update['project'].strip() + ' ' + update['old'].strip() + ' -> ' + update['new'].strip()
                         if 'comments' in update:
