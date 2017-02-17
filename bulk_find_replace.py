@@ -73,6 +73,9 @@ for repo in org_repos:
                         if 'comments' in update:
                             commit_message += ' ' + update['comments'].strip()
 
+                        if options.print_only:
+                            print cur_repo.git.diff(file_to_modify)
+
                         print cur_repo.git.add(file_to_modify)
                         print cur_repo.git.commit(m=commit_message)
 
