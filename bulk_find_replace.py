@@ -45,8 +45,8 @@ for repo in org_repos:
             composer_data = json.loads(composer_contents)
 
             for update in config['updates']:
-                project_identifier = 'drupal/' + update['project']
-                if composer_data['require'][project_identifier] == update['old']:
+                project_identifier = 'drupal/' + update['project'].strip()
+                if composer_data['require'][project_identifier.strip()] == update['old'].strip():
                     # There is at least one update to this repo.
                     repo_needs_update = True
                     break
@@ -60,15 +60,16 @@ for repo in org_repos:
                     composer_data = json.load(f)
 
                 for update in config['updates']:
-                    project_identifier = 'drupal/' + update['project']
-                    if project_identifier in composer_data['require'] and composer_data['require'][project_identifier] == update['old']:
-                        composer_data['require'][project_identifier] = update['new']
+                    project_identifier = 'drupal/' + update['project'].strip()
+                    if project_identifier.strip() in composer_data['require'] and composer_data['require'][project_identifier.strip()] == update['old'].strip():
+
+                        composer_data['require'][project_identifier.strip()] = update['new'].strip()
                         with open(file_to_edit, 'w') as f:
                             json.dump(composer_data, f, indent=4, sort_keys=True) + "\n"
 
-                        commit_message = update['project'] + ' ' + update['old'] + ' -> ' + update['new']
+                        commit_message = update['project'].strip() + ' ' + update['old'].strip() + ' -> ' + update['new'].strip()
                         if 'comments' in update:
-                            commit_message += ' ' + update['comments']
+                            commit_message += ' ' + update['comments'].strip()
 
                         print cur_repo.git.add(file_to_modify)
                         print cur_repo.git.commit(m=commit_message)
