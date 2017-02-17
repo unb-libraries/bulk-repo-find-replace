@@ -4,7 +4,7 @@
 """
 import json
 
-updates = {}
+updates = []
 
 columns_validate = 8
 type_column = 2
@@ -33,7 +33,9 @@ for line in iter(raw_input, sentinel):
                     'new': fields[5].replace(version_strip_filter, '').strip(),
                     'comments': type.strip()
                 }
-                updates[type_string] = update_entry
+                if not update_entry in updates:
+                    updates.append(update_entry)
 
 if len(updates) != 0:
-    print json.dumps(updates.values(), indent=4)
+    updates = sorted(updates, key=lambda k: k['project'])
+    print json.dumps(updates, indent=4)
