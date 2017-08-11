@@ -36,59 +36,62 @@ num_repos = len(list(org_repos))
 
 for repo in org_repos:
     if include_repo_match == '' or include_repo_match in repo.name:
-        try:
-            repo_needs_update = False
-            file_contents = repo.get_file_contents(file_to_modify)
+        for branch_name in ['dev', 'prod']:
+            try:
+                print repo.name
+                repo_needs_update = False
+                branch = repo.get_branch(branch_name)
+                file_contents = repo.get_file_contents(file_to_modify, branch_name)
 
-            assert file_contents.encoding == "base64", "unsupported encoding: %s" % file_contents.encoding
-            composer_contents = base64.b64decode(file_contents.content)
-            composer_data = json.loads(composer_contents)
-
-            for update in config['updates']:
-                project_identifier = 'drupal/' + update['project'].strip()
-                if composer_data['require'][project_identifier.strip()] == update['old'].strip():
-                    # There is at least one update to this repo.
-                    repo_needs_update = True
-                    break
-
-            if repo_needs_update:
-                tmp_dirpath = tempfile.mkdtemp()
-                cur_repo = Repo.clone_from(repo.ssh_url, tmp_dirpath)
-
-                file_to_edit = os.path.join(tmp_dirpath, file_to_modify)
-                with open(file_to_edit, 'r') as f:
-                    composer_data = json.load(f)
+                assert file_contents.encoding == "base64", "unsupported encoding: %s" % file_contents.encoding
+                composer_contents = base64.b64decode(file_contents.content)
+                composer_data = json.loads(composer_contents)
 
                 for update in config['updates']:
                     project_identifier = 'drupal/' + update['project'].strip()
-                    if project_identifier.strip() in composer_data['require'] and composer_data['require'][project_identifier.strip()] == update['old'].strip():
+                    if composer_data['require'][project_identifier.strip()] == update['old'].strip():
+                        # There is at least one update to this repo.
+                        repo_needs_update = True
+                        break
 
-                        composer_data['require'][project_identifier.strip()] = update['new'].strip()
-                        with open(file_to_edit, 'w') as f:
-                            updated_data = json.dumps(composer_data, indent=4, sort_keys=True)
-                            for write_line in iter(updated_data.split('\n')):
-                                f.write(write_line.rstrip() + "\n")
+                if repo_needs_update:
+                    tmp_dirpath = tempfile.mkdtemp()
+                    cur_repo = Repo.clone_from(repo.ssh_url, tmp_dirpath, branch=branch_name)
 
-                        commit_message = update['project'].strip() + ' ' + update['old'].strip() + ' -> ' + update['new'].strip()
-                        if 'comments' in update:
-                            commit_message += ' ' + update['comments'].strip()
+                    file_to_edit = os.path.join(tmp_dirpath, file_to_modify)
+                    with open(file_to_edit, 'r') as f:
+                        composer_data = json.load(f)
 
-                        if options.print_only:
-                            print cur_repo.git.diff(file_to_modify)
+                    for update in config['updates']:
+                        project_identifier = 'drupal/' + update['project'].strip()
+                        if project_identifier.strip() in composer_data['require'] and composer_data['require'][project_identifier.strip()] == update['old'].strip():
 
-                        print cur_repo.git.add(file_to_modify)
-                        print cur_repo.git.commit(m=commit_message)
+                            composer_data['require'][project_identifier.strip()] = update['new'].strip()
+                            with open(file_to_edit, 'w') as f:
+                                updated_data = json.dumps(composer_data, indent=4, sort_keys=True)
+                                for write_line in iter(updated_data.split('\n')):
+                                    f.write(write_line.rstrip() + "\n")
 
+                            commit_message = update['project'].strip() + ' ' + update['old'].strip() + ' -> ' + update['new'].strip()
+                            if 'comments' in update:
+                                commit_message += ' ' + update['comments'].strip()
+
+                            if options.print_only:
+                                print cur_repo.git.diff(file_to_modify)
+
+                            print cur_repo.git.add(file_to_modify)
+                            print cur_repo.git.commit(m=commit_message)
+
+                    if options.print_only:
+                        print "[DEBUG] Dry-run only. Not pushing to GitHub."
+                    else:
+                        print cur_repo.remotes.origin.push(cur_repo.head)
+
+                    print "Sleeping for " + str(pause_seconds) + " seconds to be polite.."
+                    time.sleep(pause_seconds)
+
+                shutil.rmtree(tmp_dirpath)
+
+            except:
                 if options.print_only:
-                    print "[DEBUG] Dry-run only. Not pushing to GitHub."
-                else:
-                    print cur_repo.remotes.origin.push(cur_repo.head)
-
-                print "Sleeping for " + str(pause_seconds) + " seconds to be polite.."
-                time.sleep(pause_seconds)
-
-            shutil.rmtree(tmp_dirpath)
-
-        except:
-            if options.print_only:
-                print '[DEBUG] Skipping ' + repo.name
+                    print '[DEBUG] Skipping ' + repo.name + ':' + branch_name
