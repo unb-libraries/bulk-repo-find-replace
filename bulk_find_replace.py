@@ -36,7 +36,7 @@ num_repos = len(list(org_repos))
 
 for repo in org_repos:
     if include_repo_match == '' or include_repo_match in repo.name:
-        for branch_name in ['dev', 'prod']:
+        for branch_name in ['dev']:
             try:
                 print repo.name
                 repo_needs_update = False
