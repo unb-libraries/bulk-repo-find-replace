@@ -49,7 +49,7 @@ for repo in org_repos:
 
                 for update in config['updates']:
                     project_identifier = 'drupal/' + update['project'].strip()
-                    if composer_data['require'][project_identifier.strip()] == update['old'].strip():
+                    if project_identifier.strip() in composer_data['require'] and composer_data['require'][project_identifier.strip()] == update['old'].strip():
                         # There is at least one update to this repo.
                         repo_needs_update = True
                         break
@@ -87,10 +87,11 @@ for repo in org_repos:
                     else:
                         print cur_repo.remotes.origin.push(cur_repo.head)
 
+                    # Clean Up
+                    shutil.rmtree(tmp_dirpath)
+
                     print "Sleeping for " + str(pause_seconds) + " seconds to be polite.."
                     time.sleep(pause_seconds)
-
-                shutil.rmtree(tmp_dirpath)
 
             except:
                 if options.print_only:
